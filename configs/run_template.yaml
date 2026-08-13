@@ -1,0 +1,26 @@
+run:
+  id: REPLACE_ME
+  protocol_version: 0.1.0
+  stage: smoke
+  seed: 0
+  benchmark: modular_addition
+  variant: shared_lie
+model:
+  d_model: 64
+  heads: 4
+  d_ff: 256
+  train_depth: 4
+  test_depths: [1, 2, 4, 8, 16]
+  dropout: 0.0
+  residual_step_size: 1.0
+training:
+  batch_size: 64
+  max_steps: 100
+  learning_rate: 0.0003
+  weight_decay: 0.01
+  gradient_clip_norm: 1.0
+artifacts:
+  root: runs
+  save_checkpoints: false
+  record_environment: true
+

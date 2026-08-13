@@ -1,0 +1,99 @@
+protocol_version: 0.1.0
+project: pitqs-transformer-workflow
+stages: [smoke, pilot, confirm]
+seeds:
+  smoke: [0]
+  pilot: [0]
+  confirm: [0, 1, 2]
+
+variants:
+  - standard
+  - shared_lie
+  - shared_strang
+  - shared_parallel
+  - shared_heun
+  - shared_learned_dt
+
+common:
+  framework: pytorch
+  dtype: float32
+  optimizer: adamw
+  gradient_clip_norm: 1.0
+  deterministic_eval: true
+  save_every_steps: 1000
+  log_every_steps: 50
+  learned_dt:
+    init: 1.0
+    min: 0.01
+    max: 2.0
+
+benchmarks:
+  modular_addition:
+    enabled: true
+    modulus: 97
+    d_model: 64
+    heads: 4
+    train_depths: [2, 4, 8]
+    test_depths: [1, 2, 4, 8, 16, 32]
+    batch_size: 256
+    pilot_steps: 10000
+    primary_metric: heldout_pair_accuracy
+  sequence_copy:
+    enabled: true
+    vocab_size: 32
+    train_lengths: [8, 16, 32]
+    test_lengths: [8, 16, 32, 48, 64, 96]
+    d_model: 64
+    heads: 4
+    train_depths: [2, 4, 8]
+    test_depths: [1, 2, 4, 8, 16, 32]
+    batch_size: 128
+    pilot_steps: 10000
+    primary_metric: exact_sequence_accuracy
+  associative_recall:
+    enabled: true
+    vocab_size: 64
+    train_pairs: [2, 4, 8]
+    test_pairs: [2, 4, 8, 10, 12, 16]
+    d_model: 64
+    heads: 4
+    train_depths: [2, 4, 8]
+    test_depths: [1, 2, 4, 8, 16, 32]
+    batch_size: 128
+    pilot_steps: 10000
+    primary_metric: query_accuracy
+  tiny_shakespeare:
+    enabled: true
+    tokenizer: character
+    context_length: 128
+    d_model: 128
+    heads: 4
+    train_depths: [4, 8]
+    test_depths: [1, 2, 4, 8, 16]
+    batch_size: 64
+    pilot_tokens: 10000000
+    primary_metric: validation_bits_per_character
+  cifar10_small_vit:
+    enabled: false
+    activation_gate: promotion_on_two_core_benchmark_families
+    image_size: 32
+    patch_size: 4
+    d_model: 128
+    heads: 4
+    train_depths: [4, 8]
+    test_depths: [2, 4, 8, 16]
+    primary_metric: validation_accuracy
+
+comparisons:
+  required:
+    - shape_matched
+    - parameter_matched
+    - compute_matched_for_heun
+  report:
+    - unique_parameters
+    - block_evaluations
+    - estimated_flops
+    - peak_memory_mb
+    - examples_per_second
+    - wall_clock_seconds
+
